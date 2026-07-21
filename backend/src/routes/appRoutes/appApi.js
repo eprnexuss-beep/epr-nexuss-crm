@@ -2,6 +2,7 @@ const express = require('express');
 const { catchErrors } = require('@/handlers/errorHandlers');
 const router = express.Router();
 
+const leadController = require('@/controllers/erpControllers/leadController');
 const appControllers = require('@/controllers/appControllers');
 const { routesList } = require('@/models/utils');
 
@@ -29,5 +30,7 @@ routesList.forEach(({ entity, controllerName }) => {
   const controller = appControllers[controllerName];
   routerApp(entity, controller);
 });
+// Register Lead routes
+routerApp('lead', leadController);
 
 module.exports = router;

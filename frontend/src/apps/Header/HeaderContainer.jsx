@@ -1,24 +1,84 @@
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { Avatar, Dropdown, Layout, Badge, Button } from 'antd';
-
-// import Notifications from '@/components/Notification';
-
-import { LogoutOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons';
+import { Avatar, Dropdown, Layout, Badge, Tooltip, List, Typography } from 'antd';
+import { BellOutlined, UserOutlined, LogoutOutlined, ToolOutlined } from '@ant-design/icons';
+import { useState, useEffect, useCallback } from 'react';
 
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
-
 import { FILE_BASE_URL } from '@/config/serverApiConfig';
-
 import useLanguage from '@/locale/useLanguage';
 
 import UpgradeButton from './UpgradeButton';
 
+const { Text } = Typography;
+
 export default function HeaderContent() {
   const currentAdmin = useSelector(selectCurrentAdmin);
   const { Header } = Layout;
-
   const translate = useLanguage();
+
+  const [followUpNotifications, setFollowUpNotifications] = useState([]);
+  const [bellVisible, setBellVisible] = useState(false);
+
+  // Reusable function to fetch upcoming follow-ups
+    const fetchUpcomingFollowUps = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:8888/lead');
+      const result = await response.json();
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let upcoming = [];
+
+      result.data.forEach(lead => {
+        if (lead.followUps && lead.followUps.length > 0) {
+          const pendingFollowUps = lead.followUps.filter(fu => 
+            fu.date && fu.status !== 'done'
+          );
+
+          if (pendingFollowUps.length > 0) {
+            // Sort by date DESC (Latest first)
+            const sortedFollowUps = pendingFollowUps.sort((a, b) => 
+              new Date(b.date) - new Date(a.date)
+            );
+
+            const latestUpcoming = sortedFollowUps.find(fu => 
+              new Date(fu.date) >= today
+            );
+
+            if (latestUpcoming) {
+              upcoming.push({
+                ...lead,
+                followUpDate: latestUpcoming.date,
+                followUpMessage: latestUpcoming.message || '',
+              });
+            }
+          }
+        }
+      });
+
+      console.log('Notifications Updated:', upcoming); // Debug
+      setFollowUpNotifications(upcoming);
+    } catch (error) {
+      console.error('Failed to fetch follow-ups', error);
+    }
+  }, []);
+
+  // Initial fetch when component mounts
+  useEffect(() => {
+    fetchUpcomingFollowUps();
+  }, [fetchUpcomingFollowUps]);
+
+  // Expose refresh function globally so Lead page can call it after update
+  useEffect(() => {
+    window.refreshNotifications = fetchUpcomingFollowUps;
+    
+    // Cleanup when component unmounts
+    return () => {
+      delete window.refreshNotifications;
+    };
+  }, [fetchUpcomingFollowUps]);
 
   const ProfileDropdown = () => {
     const navigate = useNavigate();
@@ -47,7 +107,7 @@ export default function HeaderContent() {
   };
 
   const DropdownMenu = ({ text }) => {
-    return <span style={{}}>{text}</span>;
+    return <span>{text}</span>;
   };
 
   const items = [
@@ -55,9 +115,7 @@ export default function HeaderContent() {
       label: <ProfileDropdown className="headerDropDownMenu" />,
       key: 'ProfileDropdown',
     },
-    {
-      type: 'divider',
-    },
+    { type: 'divider' },
     {
       icon: <UserOutlined />,
       key: 'settingProfile',
@@ -72,11 +130,7 @@ export default function HeaderContent() {
       key: 'settingApp',
       label: <Link to={'/settings'}>{translate('app_settings')}</Link>,
     },
-
-    {
-      type: 'divider',
-    },
-
+    { type: 'divider' },
     {
       icon: <LogoutOutlined />,
       key: 'logout',
@@ -92,18 +146,19 @@ export default function HeaderContent() {
         display: 'flex',
         flexDirection: 'row-reverse',
         justifyContent: 'flex-start',
-        gap: ' 15px',
+        gap: '15px',
+        alignItems: 'center',
       }}
     >
+      {/* Notification Bell */}
+      
+
+      {/* Profile Dropdown */}
       <Dropdown
-        menu={{
-          items,
-        }}
+        menu={{ items }}
         trigger={['click']}
         placement="bottomRight"
-        stye={{ width: '280px', float: 'right' }}
       >
-        {/* <Badge dot> */}
         <Avatar
           className="last"
           src={currentAdmin?.photo ? FILE_BASE_URL + currentAdmin?.photo : undefined}
@@ -111,23 +166,65 @@ export default function HeaderContent() {
             color: '#f56a00',
             backgroundColor: currentAdmin?.photo ? 'none' : '#fde3cf',
             boxShadow: 'rgba(150, 190, 238, 0.35) 0px 0px 10px 2px',
-            float: 'right',
             cursor: 'pointer',
           }}
           size="large"
         >
           {currentAdmin?.name?.charAt(0)?.toUpperCase()}
         </Avatar>
-        {/* </Badge> */}
       </Dropdown>
-
-      {/* <AppsButton /> */}
+      <Dropdown
+        trigger={['click']}
+        open={bellVisible}
+        onOpenChange={setBellVisible}
+        dropdownRender={() => (
+          <div style={{
+            background: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
+            width: 340,
+            maxHeight: 450,
+            overflow: 'auto'
+          }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', fontWeight: 'bold' }}>
+              Upcoming Follow-ups ({followUpNotifications.length})
+            </div>
+            <List
+              dataSource={followUpNotifications}
+              renderItem={item => (
+                <List.Item style={{ padding: '12px 16px', cursor: 'pointer' }}>
+                  <div style={{ width: '100%' }}>
+                    <Text strong>{item.leadName}</Text>
+                    <div style={{ fontSize: '12px', color: '#666' }}>
+                      {item.company} • {new Date(item.followUpDate).toLocaleDateString()}
+                    </div>
+                    {item.followUpMessage && (
+                      <div style={{ fontSize: '13px', marginTop: 4, color: '#555' }}>
+                        {item.followUpMessage.substring(0, 85)}...
+                      </div>
+                    )}
+                  </div>
+                </List.Item>
+              )}
+              locale={{ emptyText: 'No upcoming follow-ups' }}
+            />
+          </div>
+        )}
+      >
+        <Tooltip title="Follow-up Notifications">
+          <Badge count={followUpNotifications.length} overflowCount={99} dot={followUpNotifications.length > 0}>
+            <BellOutlined 
+              style={{ 
+                fontSize: '22px', 
+                cursor: 'pointer',
+                padding: '8px'
+              }} 
+            />
+          </Badge>
+        </Tooltip>
+      </Dropdown>
 
       <UpgradeButton />
     </Header>
   );
 }
-
-//  console.log(
-//    '🚀 Welcome to IDURAR ERP CRM! Did you know that we also offer commercial customization services? Contact us at hello@idurarapp.com for more information.'
-//  );

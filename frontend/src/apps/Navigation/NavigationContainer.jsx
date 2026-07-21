@@ -5,7 +5,7 @@ import { Button, Drawer, Layout, Menu } from 'antd';
 import { useAppContext } from '@/context/appContext';
 
 import useLanguage from '@/locale/useLanguage';
-import logoIcon from '@/style/images/logo-icon.svg';
+import logoIcon from '@/style/images/logo/epr-logo.jpeg';
 import logoText from '@/style/images/logo-text.svg';
 
 import useResponsive from '@/hooks/useResponsive';
@@ -58,6 +58,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'customer',
       icon: <CustomerServiceOutlined />,
       label: <Link to={'/customer'}>{translate('customers')}</Link>,
+    },
+        {
+      key: 'lead',
+      icon: <UserOutlined />,
+      label: <Link to={'/lead'}>Leads</Link>,
     },
 
     {
@@ -152,8 +157,8 @@ function Sidebar({ collapsible, isMobile = false }) {
         }}
       >
         <img src={logoIcon} alt="Logo" style={{ marginLeft: '-5px', height: '40px' }} />
-
-        {!showLogoApp && (
+        <h3 style={{ marginLeft: '10px', fontSize: '18px', marginTop: '5px', }}>EPR NEXUSS</h3>
+        {/* {!showLogoApp && (
           <img
             src={logoText}
             alt="Logo"
@@ -161,9 +166,10 @@ function Sidebar({ collapsible, isMobile = false }) {
               marginTop: '3px',
               marginLeft: '10px',
               height: '38px',
-            }}
+            }
+          }
           />
-        )}
+        )} */}
       </div>
       <Menu
         items={items}
