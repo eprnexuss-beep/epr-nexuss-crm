@@ -4,6 +4,7 @@ import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
+const API_URL = import.meta.env.VITE_FILE_BASE_URL;
 const { Option } = Select;
 
 const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
@@ -58,10 +59,10 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
       };
 
       if (isEdit && initialValues?._id) {
-        await axios.put(`http://localhost:8888/lead/${initialValues._id}`, payload);
+        await axios.put(`${API_URL}lead/${initialValues._id}`, payload);
         message.success('Lead updated successfully');
       } else {
-        await axios.post('http://localhost:8888/lead', payload);
+        await axios.post(`${API_URL}lead`, payload);
         message.success('Lead created successfully');
       }
 

@@ -9,6 +9,7 @@ import { FILE_BASE_URL } from '@/config/serverApiConfig';
 import useLanguage from '@/locale/useLanguage';
 
 import UpgradeButton from './UpgradeButton';
+// import { FILE_BASE_URL } from '@/config/serverApiConfig';
 
 const { Text } = Typography;
 
@@ -23,7 +24,7 @@ export default function HeaderContent() {
   // Reusable function to fetch upcoming follow-ups
     const fetchUpcomingFollowUps = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8888/lead');
+      const response = await fetch(`${FILE_BASE_URL}lead`);
       const result = await response.json();
       
       const today = new Date();

@@ -5,6 +5,7 @@ const compression = require('compression');
 
 const cookieParser = require('cookie-parser');
 const leadRoutes = require('./routes/erpRoutes/leadRoutes');
+const leadImportRoutes = require('./routes/leadImport/leadImportRoutes');
 const coreAuthRouter = require('./routes/coreRoutes/coreAuth');
 const coreApiRouter = require('./routes/coreRoutes/coreApi');
 const coreDownloadRouter = require('./routes/coreRoutes/coreDownloadRouter');
@@ -24,7 +25,7 @@ app.use(
     credentials: true,
   })
 );
-
+app.use('/lead', leadImportRoutes);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -35,7 +36,7 @@ app.use(compression());
 // app.use(fileUpload());
 
 // Here our API Routes
-app.use('/lead', leadRoutes);
+app.use('/lead', adminAuth.isValidAuthToken, leadRoutes);
 app.use('/api', coreAuthRouter);
 app.use('/api', adminAuth.isValidAuthToken, coreApiRouter);
 app.use('/api', adminAuth.isValidAuthToken, erpApiRouter);

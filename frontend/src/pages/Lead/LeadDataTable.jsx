@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Table, Tag, Button, Space, Popconfirm, message } from 'antd';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_FILE_BASE_URL;
 const LeadDataTable = ({ onEdit, onViewDetails }) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLeads = async () => {
     try {
-      const response = await axios.get('http://localhost:8888/lead');
+      const response = await axios.get(`${API_URL}lead`);
       setLeads(response.data.data || []);
     } catch (error) {
       console.error('Error fetching leads:', error);
@@ -24,7 +25,7 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8888/lead/${id}`);
+      await axios.delete(`${API_URL}lead/${id}`);
       message.success('Lead deleted successfully');
       fetchLeads();           // Refresh table
     } catch (error) {

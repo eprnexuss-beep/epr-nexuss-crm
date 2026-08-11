@@ -18,12 +18,12 @@ async function setupApp() {
     const passwordHash = newAdminPassword.generateHash(salt, 'admin123');
 
     const demoAdmin = {
-      email: 'admin@admin.com',
-      name: 'IDURAR',
-      surname: 'Admin',
-      enabled: true,
-      role: 'owner',
-    };
+  email: 'admin@eprnexuss.com',
+  name: 'EPR Nexuss',
+  surname: 'Admin',
+  enabled: true,
+  role: 'owner',
+};
     const result = await new Admin(demoAdmin).save();
 
     const AdminPasswordData = {

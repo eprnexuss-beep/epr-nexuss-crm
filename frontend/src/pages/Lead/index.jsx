@@ -3,6 +3,8 @@ import { Button, Modal, Descriptions, Tag, Space } from 'antd';
 import LeadDataTable from './LeadDataTable';
 import LeadForm from './LeadForm';
 import dayjs from 'dayjs';
+import LeadImport from '@/components/LeadImport/LeadImport';
+
 
 const Lead = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,9 +47,12 @@ const Lead = () => {
     <>
       <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Leads</h1>
-        <Button type="primary" onClick={showModal}>
-          + Add New Lead
-        </Button>
+        <Space>
+          <LeadImport onSuccess={() => window.location.reload()} />
+          <Button type="primary" onClick={showModal}>
+            + Add New Lead
+          </Button>
+        </Space>
       </div>
 
       <LeadDataTable 

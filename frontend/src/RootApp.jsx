@@ -10,7 +10,7 @@ const IdurarOs = lazy(() => import('./apps/IdurarOs'));
 
 export default function RoutApp() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/crm">
       <Provider store={store}>
         <Suspense fallback={<PageLoader />}>
           <IdurarOs />
