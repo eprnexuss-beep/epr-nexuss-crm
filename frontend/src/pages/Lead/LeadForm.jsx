@@ -3,6 +3,8 @@ import { Form, Input, DatePicker, Select, Button, message, Space, Card } from 'a
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { EMPLOYEES } from '@/config/employees';
+import { SERVICE_TYPES } from '@/config/serviceTypes';
 
 const API_URL = import.meta.env.VITE_FILE_BASE_URL;
 const { Option } = Select;
@@ -11,13 +13,16 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [followUps, setFollowUps] = useState([{ date: null, message: '', status: 'pending' }]);
+  const selectedServiceType = Form.useWatch('serviceType', form);
 
   // Load initial data properly
   useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
         leadName: initialValues.leadName,
-        company: initialValues.company,
+        assignedTo: initialValues.assignedTo,
+        serviceType: initialValues.serviceType,
+        otherServiceType: initialValues.otherServiceType,
         phone: initialValues.phone,
         email: initialValues.email,
         source: initialValues.source,
@@ -82,9 +87,30 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
         <Input />
       </Form.Item>
 
-      <Form.Item name="company" label="Company">
-        <Input />
+      <Form.Item name="assignedTo" label="Assigned To">
+        <Select placeholder="Select employee" allowClear>
+          {EMPLOYEES.map(name => (
+            <Option key={name} value={name}>{name}</Option>
+          ))}
+        </Select>
       </Form.Item>
+      <Form.Item name="serviceType" label="Service Type">
+        <Select placeholder="Select service type" allowClear>
+          {SERVICE_TYPES.map(type => (
+            <Option key={type} value={type}>{type}</Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      {selectedServiceType === 'Other' && (
+        <Form.Item
+          name="otherServiceType"
+          label="Please specify service type"
+          rules={[{ required: true, message: 'Please enter the service type' }]}
+        >
+          <Input placeholder="Enter service type" />
+        </Form.Item>
+      )}
 
       <Form.Item name="phone" label="Phone">
         <Input />
@@ -113,8 +139,10 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
           <div key={index} style={{ marginBottom: 16, padding: 12, border: '1px solid #f0f0f0', borderRadius: 8 }}>
             <Space direction="vertical" style={{ width: '100%' }}>
               <DatePicker
+                showTime={{ format: 'hh:mm A' }}
+                format="DD/MM/YYYY hh:mm A"
                 style={{ width: '100%' }}
-                placeholder="Follow-up Date"
+                placeholder="Follow-up Date & Time"
                 value={fu.date}
                 onChange={(date) => {
                   const newFollowUps = [...followUps];
@@ -132,9 +160,9 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
                   setFollowUps(newFollowUps);
                 }}
               />
-              <Button 
-                danger 
-                icon={<DeleteOutlined />} 
+              <Button
+                danger
+                icon={<DeleteOutlined />}
                 onClick={() => removeFollowUp(index)}
                 disabled={followUps.length === 1}
               >

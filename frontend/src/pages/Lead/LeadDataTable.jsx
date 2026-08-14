@@ -3,6 +3,7 @@ import { Table, Tag, Button, Space, Popconfirm, message } from 'antd';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_FILE_BASE_URL;
+
 const LeadDataTable = ({ onEdit, onViewDetails }) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,40 +28,74 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
     try {
       await axios.delete(`${API_URL}lead/${id}`);
       message.success('Lead deleted successfully');
-      fetchLeads();           // Refresh table
+      fetchLeads();
     } catch (error) {
       console.error('Delete error:', error);
       message.error('Failed to delete lead');
     }
   };
 
+  // Build filter options dynamically from actual lead data
+  const assignedToFilters = [...new Set(
+    leads.map(lead => lead.assignedTo).filter(name => name && name.trim() !== '')
+  )].sort().map(name => ({ text: name, value: name }));
+
+  const statusFilters = [
+    { text: 'New', value: 'new' },
+    { text: 'Contacted', value: 'contacted' },
+    { text: 'Qualified', value: 'qualified' },
+    { text: 'Lost', value: 'lost' },
+  ];
+
+  const serviceTypeFilters = [
+    { text: 'Lithium Recycling', value: 'Lithium Recycling' },
+    { text: 'Tyre Recycling', value: 'Tyre Recycling' },
+    { text: 'Plastic Recycling', value: 'Plastic Recycling' },
+    { text: 'E-waste Recycling', value: 'E-waste Recycling' },
+    { text: 'RVSF', value: 'RVSF' },
+    { text: 'Other', value: 'Other' },
+  ];
+
   const columns = [
     { title: 'Lead Name', dataIndex: 'leadName', key: 'leadName' },
-    { title: 'Company', dataIndex: 'company', key: 'company' },
+    {
+      title: 'Assigned To',
+      dataIndex: 'assignedTo',
+      key: 'assignedTo',
+      filters: assignedToFilters,
+      onFilter: (value, record) => record.assignedTo === value,
+    },
+    {
+      title: 'Service Type',
+      dataIndex: 'serviceType',
+      key: 'serviceType',
+      filters: serviceTypeFilters,
+      onFilter: (value, record) => record.serviceType === value,
+      render: (serviceType, record) =>
+        serviceType === 'Other' ? (record.otherServiceType || 'Other') : (serviceType || '-'),
+    },
     { title: 'Phone', dataIndex: 'phone', key: 'phone' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      filters: statusFilters,
+      onFilter: (value, record) => record.status === value,
       render: (status) => <Tag color={status === 'new' ? 'blue' : 'green'}>{status}</Tag>,
     },
-        {
+    {
       title: 'Follow-up Date',
       key: 'followUpDate',
       render: (_, record) => {
         if (!record.followUps || record.followUps.length === 0) return '-';
-        
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-
-        // Filter pending + future follow-ups and sort by date DESC (Latest first)
         const upcoming = record.followUps
           .filter(fu => fu.date && new Date(fu.date) >= today)
           .sort((a, b) => new Date(b.date) - new Date(a.date));
-
         if (upcoming.length > 0) {
-          return new Date(upcoming[0].date).toLocaleDateString();
+          return new Date(upcoming[0].date).toLocaleString();
         }
         return '-';
       },
@@ -70,30 +105,17 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
       key: 'action',
       render: (_, record) => (
         <Space size="small">
-          <Button 
-            size="small" 
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent row click
-              onEdit(record);
-            }}
-          >
+          <Button size="small" onClick={(e) => { e.stopPropagation(); onEdit(record); }}>
             Edit
           </Button>
-          <Popconfirm 
-            title="Delete this lead?" 
-            okText="Yes" 
+          <Popconfirm
+            title="Delete this lead?"
+            okText="Yes"
             cancelText="No"
-            onConfirm={(e) => {
-              e.stopPropagation(); // Important
-              handleDelete(record._id);
-            }}
+            onConfirm={(e) => { e.stopPropagation(); handleDelete(record._id); }}
             onCancel={(e) => e.stopPropagation()}
           >
-            <Button 
-              size="small" 
-              danger
-              onClick={(e) => e.stopPropagation()} // Extra safety
-            >
+            <Button size="small" danger onClick={(e) => e.stopPropagation()}>
               Delete
             </Button>
           </Popconfirm>
@@ -110,7 +132,6 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
       rowKey="_id"
       onRow={(record) => ({
         onClick: (e) => {
-          // Only open details if click is NOT on action buttons
           const isActionClick = e.target.closest('button') || e.target.closest('.ant-popconfirm');
           if (!isActionClick) {
             onViewDetails(record);

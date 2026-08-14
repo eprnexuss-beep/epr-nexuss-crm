@@ -23,8 +23,7 @@ export default function SideContent() {
         <img
           src={logo}
           alt="EPR Nexuss Solutions CRM"
-          style={{ margin: '0 70px 40px', display: 'block' }}
-          height={220}
+          style={{ margin: '0 auto 40px', display: 'block', maxWidth: '100%', height: 'auto' }}
           width={220}
         />
 

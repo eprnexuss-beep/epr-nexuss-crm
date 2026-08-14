@@ -55,9 +55,9 @@ const Lead = () => {
         </Space>
       </div>
 
-      <LeadDataTable 
-        onEdit={handleEdit} 
-        onViewDetails={handleViewDetails} 
+      <LeadDataTable
+        onEdit={handleEdit}
+        onViewDetails={handleViewDetails}
       />
 
       {/* Add / Edit Modal */}
@@ -69,15 +69,15 @@ const Lead = () => {
         width={600}
         destroyOnClose
       >
-        <LeadForm 
-          initialValues={editingLead} 
-          isEdit={!!editingLead} 
-          onSuccess={handleSuccess} 
+        <LeadForm
+          initialValues={editingLead}
+          isEdit={!!editingLead}
+          onSuccess={handleSuccess}
         />
       </Modal>
 
       {/* View Details Modal */}
-            {/* View Details Modal */}
+      {/* View Details Modal */}
       <Modal
         title="Lead Details"
         open={isDetailModalOpen}
@@ -91,8 +91,14 @@ const Lead = () => {
               <strong>{viewingLead.leadName}</strong>
             </Descriptions.Item>
 
-            <Descriptions.Item label="Company">
-              {viewingLead.company || '-'}
+            <Descriptions.Item label="Assigned To">
+              {viewingLead.assignedTo || '-'}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Service Type">
+              {viewingLead.serviceType === 'Other'
+                ? (viewingLead.otherServiceType || 'Other')
+                : (viewingLead.serviceType || '-')}
             </Descriptions.Item>
 
             <Descriptions.Item label="Phone">
@@ -114,34 +120,34 @@ const Lead = () => {
             </Descriptions.Item>
 
             {/* Fixed: Show Next Follow-up Date & Message */}
-                        {/* Show Latest Upcoming Follow-up */}
+            {/* Show Latest Upcoming Follow-up */}
             <Descriptions.Item label="Follow-up Date">
               {(() => {
                 if (!viewingLead.followUps || viewingLead.followUps.length === 0) return '-';
-                
+
                 const today = new Date();
                 const upcoming = viewingLead.followUps
                   .filter(fu => fu.date && new Date(fu.date) >= today)
                   .sort((a, b) => new Date(b.date) - new Date(a.date)); // Latest first
 
-                return upcoming.length > 0 
-                  ? dayjs(upcoming[0].date).format('DD/MM/YYYY') 
+                return upcoming.length > 0
+                  ? dayjs(upcoming[0].date).format('DD/MM/YYYY hh:mm A')
                   : '-';
               })()}
             </Descriptions.Item>
 
             <Descriptions.Item label="Follow-up Message" span={2}>
               {(() => {
-                if (!viewingLead.followUps || viewingLead.followUps.length === 0) 
+                if (!viewingLead.followUps || viewingLead.followUps.length === 0)
                   return 'No message added';
-                
+
                 const today = new Date();
                 const upcoming = viewingLead.followUps
                   .filter(fu => fu.date && new Date(fu.date) >= today)
                   .sort((a, b) => new Date(b.date) - new Date(a.date)); // Latest first
 
-                return upcoming.length > 0 && upcoming[0].message 
-                  ? upcoming[0].message 
+                return upcoming.length > 0 && upcoming[0].message
+                  ? upcoming[0].message
                   : 'No message added';
               })()}
             </Descriptions.Item>

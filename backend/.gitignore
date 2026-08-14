@@ -7,3 +7,5 @@ notes.md
 .env
 *.pdf
 uploads/
+frontend/dist.zip
+frontend/dist/

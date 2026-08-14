@@ -1,56 +1,62 @@
-  const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-  const leadSchema = new mongoose.Schema({
-    leadName: { type: String, required: true },
-    company: String,
-    phone: String,
-    email: String,
-    source: String,
-    status: { 
-      type: String, 
-      enum: ['new', 'contacted', 'qualified', 'lost'], 
-      default: 'new' 
+const leadSchema = new mongoose.Schema({
+  leadName: { type: String, required: true },
+  assignedTo: String,
+  serviceType: {
+  type: String,
+  enum: ['Lithium Recycling', 'Tyre Recycling', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Other'],
+},
+otherServiceType: String,
+
+  phone: String,
+  email: String,
+  source: String,
+  status: {
+    type: String,
+    enum: ['new', 'contacted', 'qualified', 'lost'],
+    default: 'new'
+  },
+
+  // Support Multiple Follow-ups
+  followUps: [{
+    date: {
+      type: Date,
+      required: true
     },
-    
-    // Support Multiple Follow-ups
-    followUps: [{
-      date: { 
-        type: Date, 
-        required: true 
-      },
-      message: {
-        type: String,
-        trim: true
-      },
-      status: { 
-        type: String, 
-        enum: ['pending', 'done'], 
-        default: 'pending' 
-      }
-    }],
-
-    createdBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'Admin' 
+    message: {
+      type: String,
+      trim: true
     },
+    status: {
+      type: String,
+      enum: ['pending', 'done'],
+      default: 'pending'
+    }
+  }],
 
-  }, { 
-    timestamps: true 
-  });
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin'
+  },
 
-  // Optional: Add index for better performance on follow-up queries
-  leadSchema.index({ 'followUps.date': 1 });
+}, {
+  timestamps: true
+});
 
-  // Virtual to get the next upcoming follow-up (useful for notifications)
-  leadSchema.virtual('nextFollowUp').get(function() {
-    if (!this.followUps || this.followUps.length === 0) return null;
+// Optional: Add index for better performance on follow-up queries
+leadSchema.index({ 'followUps.date': 1 });
 
-    const today = new Date();
-    const upcoming = this.followUps
-      .filter(fu => fu.status === 'pending' && fu.date >= today)
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+// Virtual to get the next upcoming follow-up (useful for notifications)
+leadSchema.virtual('nextFollowUp').get(function() {
+  if (!this.followUps || this.followUps.length === 0) return null;
 
-    return upcoming.length > 0 ? upcoming[0] : null;
-  });
+  const today = new Date();
+  const upcoming = this.followUps
+    .filter(fu => fu.status === 'pending' && fu.date >= today)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  module.exports = mongoose.model('Lead', leadSchema);
+  return upcoming.length > 0 ? upcoming[0] : null;
+});
+
+module.exports = mongoose.model('Lead', leadSchema);

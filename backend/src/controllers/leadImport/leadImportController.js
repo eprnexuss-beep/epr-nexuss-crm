@@ -2,6 +2,9 @@ const xlsx = require('xlsx');
 const fs = require('fs');
 const Lead = require('../../models/erpModels/Lead');
 
+const VALID_EMPLOYEES = ['Bhanu', 'Anurag', 'Aina', 'Affan', 'Aman',];
+const VALID_SERVICE_TYPES = ['Lithium Recycling', 'Tyre Recycling', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Other'];
+
 exports.importLeads = async (req, res) => {
   try {
     if (!req.file) {
@@ -17,21 +20,35 @@ exports.importLeads = async (req, res) => {
     let skipped = [];
 
     for (const row of rows) {
+      const rawAssignedTo = row['Assigned To'] || row['assignedTo'] || row['Employee'] || row['employee'];
+      const matchedEmployee = VALID_EMPLOYEES.find(
+        name => name.toLowerCase() === String(rawAssignedTo || '').trim().toLowerCase()
+      );
+
+      const VALID_STATUSES = ['new', 'contacted', 'qualified', 'lost'];
+      const rawStatus = String(row['Status'] || row['status'] || '').trim().toLowerCase();
+      const matchedStatus = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'new';
+
+      const rawServiceType = row['Service Type'] || row['serviceType'] || row['Service'];
+      const matchedServiceType = VALID_SERVICE_TYPES.find(
+        type => type.toLowerCase() === String(rawServiceType || '').trim().toLowerCase()
+      );
+
       const leadData = {
         leadName: row['Name'] || row['name'] || row['Lead Name'] || row['leadName'],
         email: row['Email'] || row['email'],
         phone: row['Phone'] || row['phone'],
-        company: row['Company'] || row['company'],
+        assignedTo: matchedEmployee || '',
+        serviceType: matchedServiceType || '',
+        status: matchedStatus,
         source: row['Source'] || row['source'] || 'Sheet Import',
       };
 
-      // leadName is the only truly required field in the schema
       if (!leadData.leadName) {
         skipped.push({ row, reason: 'Missing leadName' });
         continue;
       }
 
-      // Only check duplicates if the row actually has an email
       if (leadData.email) {
         const exists = await Lead.findOne({ email: leadData.email });
         if (exists) {

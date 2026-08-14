@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Dropdown, Layout, Badge, Tooltip, List, Typography } from 'antd';
 import { BellOutlined, UserOutlined, LogoutOutlined, ToolOutlined } from '@ant-design/icons';
 import { useState, useEffect, useCallback } from 'react';
+import storePersist from '@/redux/storePersist';
 
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
 import { FILE_BASE_URL } from '@/config/serverApiConfig';
@@ -22,11 +23,16 @@ export default function HeaderContent() {
   const [bellVisible, setBellVisible] = useState(false);
 
   // Reusable function to fetch upcoming follow-ups
-    const fetchUpcomingFollowUps = useCallback(async () => {
+  const fetchUpcomingFollowUps = useCallback(async () => {
     try {
-      const response = await fetch(`${FILE_BASE_URL}lead`);
+      const auth = storePersist.get('auth');
+      const token = auth?.current?.token;
+
+      const response = await fetch(`${FILE_BASE_URL}lead`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const result = await response.json();
-      
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -34,17 +40,17 @@ export default function HeaderContent() {
 
       result.data.forEach(lead => {
         if (lead.followUps && lead.followUps.length > 0) {
-          const pendingFollowUps = lead.followUps.filter(fu => 
+          const pendingFollowUps = lead.followUps.filter(fu =>
             fu.date && fu.status !== 'done'
           );
 
           if (pendingFollowUps.length > 0) {
             // Sort by date DESC (Latest first)
-            const sortedFollowUps = pendingFollowUps.sort((a, b) => 
+            const sortedFollowUps = pendingFollowUps.sort((a, b) =>
               new Date(b.date) - new Date(a.date)
             );
 
-            const latestUpcoming = sortedFollowUps.find(fu => 
+            const latestUpcoming = sortedFollowUps.find(fu =>
               new Date(fu.date) >= today
             );
 
@@ -74,7 +80,7 @@ export default function HeaderContent() {
   // Expose refresh function globally so Lead page can call it after update
   useEffect(() => {
     window.refreshNotifications = fetchUpcomingFollowUps;
-    
+
     // Cleanup when component unmounts
     return () => {
       delete window.refreshNotifications;
@@ -152,7 +158,7 @@ export default function HeaderContent() {
       }}
     >
       {/* Notification Bell */}
-      
+
 
       {/* Profile Dropdown */}
       <Dropdown
@@ -197,7 +203,7 @@ export default function HeaderContent() {
                   <div style={{ width: '100%' }}>
                     <Text strong>{item.leadName}</Text>
                     <div style={{ fontSize: '12px', color: '#666' }}>
-                      {item.company} • {new Date(item.followUpDate).toLocaleDateString()}
+                      {item.assignedTo} • {new Date(item.followUpDate).toLocaleString()}
                     </div>
                     {item.followUpMessage && (
                       <div style={{ fontSize: '13px', marginTop: 4, color: '#555' }}>
@@ -214,12 +220,12 @@ export default function HeaderContent() {
       >
         <Tooltip title="Follow-up Notifications">
           <Badge count={followUpNotifications.length} overflowCount={99} dot={followUpNotifications.length > 0}>
-            <BellOutlined 
-              style={{ 
-                fontSize: '22px', 
+            <BellOutlined
+              style={{
+                fontSize: '22px',
                 cursor: 'pointer',
                 padding: '8px'
-              }} 
+              }}
             />
           </Badge>
         </Tooltip>
