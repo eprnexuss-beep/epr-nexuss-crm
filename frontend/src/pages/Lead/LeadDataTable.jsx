@@ -101,6 +101,18 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
       },
     },
     {
+      title: 'Latest Update',
+      key: 'latestUpdate',
+      render: (_, record) => {
+        if (!record.updates || record.updates.length === 0) return '-';
+        const sorted = [...record.updates].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const latest = sorted[0];
+        return latest.message.length > 40
+          ? latest.message.substring(0, 40) + '...'
+          : latest.message;
+      },
+    },
+    {
       title: 'Action',
       key: 'action',
       render: (_, record) => (

@@ -13,6 +13,7 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [followUps, setFollowUps] = useState([{ date: null, message: '', status: 'pending' }]);
+  const [updates, setUpdates] = useState([{ message: '' }]);
   const selectedServiceType = Form.useWatch('serviceType', form);
 
   // Load initial data properly
@@ -37,6 +38,13 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
         }));
         setFollowUps(formattedFollowUps);
       }
+      if (initialValues.updates && initialValues.updates.length > 0) {
+        const formattedUpdates = initialValues.updates.map(u => ({
+          message: u.message || '',
+          date: u.date,
+        }));
+        setUpdates(formattedUpdates);
+      }
     }
   }, [initialValues, form]);
 
@@ -47,6 +55,15 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
   const removeFollowUp = (index) => {
     if (followUps.length === 1) return;
     setFollowUps(followUps.filter((_, i) => i !== index));
+  };
+
+  const addUpdate = () => {
+    setUpdates([...updates, { message: '' }]);
+  };
+
+  const removeUpdate = (index) => {
+    if (updates.length === 1) return;
+    setUpdates(updates.filter((_, i) => i !== index));
   };
 
   const onFinish = async (values) => {
@@ -60,7 +77,10 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
             message: fu.message?.trim() || '',
             status: fu.status || 'pending'
           }))
-          .filter(fu => fu.date) // Only send follow-ups with dates
+          .filter(fu => fu.date),
+        updates: updates
+          .map(u => ({ message: u.message?.trim() || '' }))
+          .filter(u => u.message)
       };
 
       if (isEdit && initialValues?._id) {
@@ -174,6 +194,37 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
 
         <Button type="dashed" onClick={addFollowUp} block icon={<PlusOutlined />}>
           + Add Another Follow-up
+        </Button>
+      </Card>
+
+      <Card title="Client Updates" style={{ marginBottom: 16 }}>
+        {updates.map((u, index) => (
+          <div key={index} style={{ marginBottom: 16, padding: 12, border: '1px solid #f0f0f0', borderRadius: 8 }}>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Input.TextArea
+                rows={2}
+                placeholder="What happened when you connected with the client?"
+                value={u.message}
+                onChange={(e) => {
+                  const newUpdates = [...updates];
+                  newUpdates[index].message = e.target.value;
+                  setUpdates(newUpdates);
+                }}
+              />
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => removeUpdate(index)}
+                disabled={updates.length === 1}
+              >
+                Remove
+              </Button>
+            </Space>
+          </div>
+        ))}
+
+        <Button type="dashed" onClick={addUpdate} block icon={<PlusOutlined />}>
+          + Add Another Update
         </Button>
       </Card>
 

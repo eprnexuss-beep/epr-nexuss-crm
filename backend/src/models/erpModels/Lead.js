@@ -35,6 +35,18 @@ otherServiceType: String,
     }
   }],
 
+  updates: [{
+  message: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+}],
+
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Admin'

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Button, Modal, Descriptions, Tag, Space } from 'antd';
+import { Button, Modal, Descriptions, Tag, Space, Typography } from 'antd';
 import LeadDataTable from './LeadDataTable';
 import LeadForm from './LeadForm';
 import dayjs from 'dayjs';
 import LeadImport from '@/components/LeadImport/LeadImport';
-
+const { Text } = Typography;
 
 const Lead = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -149,6 +149,22 @@ const Lead = () => {
                 return upcoming.length > 0 && upcoming[0].message
                   ? upcoming[0].message
                   : 'No message added';
+              })()}
+            </Descriptions.Item>
+            <Descriptions.Item label="Latest Update" span={2}>
+              {(() => {
+                if (!viewingLead.updates || viewingLead.updates.length === 0) return 'No updates added';
+                const sorted = [...viewingLead.updates].sort((a, b) => new Date(b.date) - new Date(a.date));
+                const latest = sorted[0];
+                return (
+                  <>
+                    {latest.message}
+                    <br />
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {dayjs(latest.date).format('DD/MM/YYYY hh:mm A')}
+                    </Text>
+                  </>
+                );
               })()}
             </Descriptions.Item>
           </Descriptions>
