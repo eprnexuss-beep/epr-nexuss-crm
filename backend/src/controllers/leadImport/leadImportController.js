@@ -34,6 +34,8 @@ exports.importLeads = async (req, res) => {
         type => type.toLowerCase() === String(rawServiceType || '').trim().toLowerCase()
       );
 
+      const rawUpdate = row['Update'] || row['update'] || row['Notes'] || row['notes'];
+
       const leadData = {
         leadName: row['Name'] || row['name'] || row['Lead Name'] || row['leadName'],
         email: row['Email'] || row['email'],
@@ -42,6 +44,9 @@ exports.importLeads = async (req, res) => {
         serviceType: matchedServiceType || '',
         status: matchedStatus,
         source: row['Source'] || row['source'] || 'Sheet Import',
+        updates: rawUpdate && String(rawUpdate).trim()
+          ? [{ message: String(rawUpdate).trim() }]
+          : [],
       };
 
       if (!leadData.leadName) {

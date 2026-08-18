@@ -11,12 +11,11 @@ const coreApiRouter = require('./routes/coreRoutes/coreApi');
 const coreDownloadRouter = require('./routes/coreRoutes/coreDownloadRouter');
 const corePublicRouter = require('./routes/coreRoutes/corePublicRouter');
 const adminAuth = require('./controllers/coreControllers/adminAuth');
+const metaWebhookRoutes = require('./routes/metaWebhook/metaWebhookRoutes');
 
 const errorHandlers = require('./handlers/errorHandlers');
 const erpApiRouter = require('./routes/appRoutes/appApi');
 
-const fileUpload = require('express-fileupload');
-// create our Express app
 const app = express();
 
 app.use(
@@ -25,15 +24,15 @@ app.use(
     credentials: true,
   })
 );
-app.use('/lead', leadImportRoutes);
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(compression());
 
-// // default options
-// app.use(fileUpload());
+// Meta webhook + lead import — mounted after body parsers now
+app.use('/', metaWebhookRoutes);
+app.use('/lead', leadImportRoutes);
 
 // Here our API Routes
 app.use('/lead', adminAuth.isValidAuthToken, leadRoutes);
@@ -43,11 +42,7 @@ app.use('/api', adminAuth.isValidAuthToken, erpApiRouter);
 app.use('/download', coreDownloadRouter);
 app.use('/public', corePublicRouter);
 
-// If that above routes didnt work, we 404 them and forward to error handler
 app.use(errorHandlers.notFound);
-
-// production error handler
 app.use(errorHandlers.productionErrors);
 
-// done! we export it so we can start the site in start.js
 module.exports = app;
