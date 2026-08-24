@@ -3,9 +3,9 @@ const Lead = require('../../models/erpModels/Lead');
 
 const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN;
-const EMPLOYEES_ROTATION = ['Aman', 'Aina', 'Bhanu', 'Anurag', 'Affan']; // Add more employees as needed
+const EMPLOYEES_ROTATION = ['Aman', 'Aina', 'Bhanu'];
 
-// Simple in-memory rotation (resets on server restart — fine for low volume, upgrade later if needed)
+// Simple in-memory rotation (resets on server restart)
 let lastAssignedIndex = -1;
 function getNextEmployee() {
   lastAssignedIndex = (lastAssignedIndex + 1) % EMPLOYEES_ROTATION.length;
@@ -25,7 +25,7 @@ exports.verifyWebhook = (req, res) => {
 };
 
 exports.receiveWebhook = async (req, res) => {
-  res.sendStatus(200); // respond fast
+  res.sendStatus(200); // respond fast so Meta doesn't retry
 
   try {
     const entries = req.body.entry || [];
