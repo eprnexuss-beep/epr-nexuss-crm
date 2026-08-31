@@ -5,7 +5,7 @@ const leadSchema = new mongoose.Schema({
   assignedTo: String,
   serviceType: {
   type: String,
-  enum: ['Lithium Recycling', 'Tyre Recycling', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Other'],
+  enum: ['Lithium Recycling', 'Tyre Recycling', 'Biogas', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Other'],
 },
 otherServiceType: String,
 

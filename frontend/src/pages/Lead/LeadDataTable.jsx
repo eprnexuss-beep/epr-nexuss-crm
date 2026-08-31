@@ -50,6 +50,7 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
   const serviceTypeFilters = [
     { text: 'Lithium Recycling', value: 'Lithium Recycling' },
     { text: 'Tyre Recycling', value: 'Tyre Recycling' },
+    { text: 'Biogas', value: 'Biogas' },
     { text: 'Plastic Recycling', value: 'Plastic Recycling' },
     { text: 'E-waste Recycling', value: 'E-waste Recycling' },
     { text: 'RVSF', value: 'RVSF' },
