@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button, Modal, Descriptions, Tag, Space, Typography } from 'antd';
 import LeadDataTable from './LeadDataTable';
 import LeadForm from './LeadForm';
 import dayjs from 'dayjs';
 import LeadImport from '@/components/LeadImport/LeadImport';
+
 const { Text } = Typography;
 
 const Lead = () => {
@@ -11,6 +12,7 @@ const Lead = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
   const [viewingLead, setViewingLead] = useState(null);
+  const tableRef = useRef(null);
 
   const showModal = () => {
     setEditingLead(null);
@@ -40,7 +42,7 @@ const Lead = () => {
   const handleSuccess = () => {
     setIsModalOpen(false);
     setEditingLead(null);
-    window.location.reload(); // temporary refresh
+    tableRef.current?.refresh();
   };
 
   return (
@@ -48,7 +50,7 @@ const Lead = () => {
       <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Leads</h1>
         <Space>
-          <LeadImport onSuccess={() => window.location.reload()} />
+          <LeadImport onSuccess={() => tableRef.current?.refresh()} />
           <Button type="primary" onClick={showModal}>
             + Add New Lead
           </Button>
@@ -56,6 +58,7 @@ const Lead = () => {
       </div>
 
       <LeadDataTable
+        ref={tableRef}
         onEdit={handleEdit}
         onViewDetails={handleViewDetails}
       />

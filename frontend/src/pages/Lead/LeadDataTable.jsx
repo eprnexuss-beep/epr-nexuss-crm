@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Table, Tag, Button, Space, Popconfirm, message } from 'antd';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_FILE_BASE_URL;
 
-const LeadDataTable = ({ onEdit, onViewDetails }) => {
+const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,6 +19,10 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
       setLoading(false);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    refresh: fetchLeads
+  }));
 
   useEffect(() => {
     fetchLeads();
@@ -35,7 +39,6 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
     }
   };
 
-  // Build filter options dynamically from actual lead data
   const assignedToFilters = [...new Set(
     leads.map(lead => lead.assignedTo).filter(name => name && name.trim() !== '')
   )].sort().map(name => ({ text: name, value: name }));
@@ -50,10 +53,10 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
   const serviceTypeFilters = [
     { text: 'Lithium Recycling', value: 'Lithium Recycling' },
     { text: 'Tyre Recycling', value: 'Tyre Recycling' },
-    { text: 'Biogas', value: 'Biogas' },
     { text: 'Plastic Recycling', value: 'Plastic Recycling' },
     { text: 'E-waste Recycling', value: 'E-waste Recycling' },
     { text: 'RVSF', value: 'RVSF' },
+    { text: 'Biogas', value: 'Biogas' },
     { text: 'Other', value: 'Other' },
   ];
 
@@ -155,6 +158,6 @@ const LeadDataTable = ({ onEdit, onViewDetails }) => {
       scroll={{ x: true }}
     />
   );
-};
+});
 
 export default LeadDataTable;
