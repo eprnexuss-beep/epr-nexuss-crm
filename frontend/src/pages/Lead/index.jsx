@@ -117,9 +117,23 @@ const Lead = () => {
             </Descriptions.Item>
 
             <Descriptions.Item label="Status">
-              <Tag color={viewingLead.status === 'new' ? 'blue' : 'green'}>
-                {viewingLead.status}
-              </Tag>
+              {(() => {
+                const colorMap = {
+                  new: 'blue',
+                  contacted: 'gold',
+                  qualified: 'purple',
+                  won: 'green',
+                  not_interested: 'red',
+                };
+                const labelMap = {
+                  new: 'New',
+                  contacted: 'Contacted',
+                  qualified: 'Qualified',
+                  won: 'Won',
+                  not_interested: 'Not Interested',
+                };
+                return <Tag color={colorMap[viewingLead.status] || 'default'}>{labelMap[viewingLead.status] || viewingLead.status}</Tag>;
+              })()}
             </Descriptions.Item>
 
             {/* Fixed: Show Next Follow-up Date & Message */}

@@ -25,7 +25,7 @@ exports.importLeads = async (req, res) => {
         name => name.toLowerCase() === String(rawAssignedTo || '').trim().toLowerCase()
       );
 
-      const VALID_STATUSES = ['new', 'contacted', 'qualified', 'lost'];
+      const VALID_STATUSES = ['new', 'contacted', 'qualified', 'won', 'not_interested'];
       const rawStatus = String(row['Status'] || row['status'] || '').trim().toLowerCase();
       const matchedStatus = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'new';
 

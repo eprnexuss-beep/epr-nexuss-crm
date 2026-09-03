@@ -47,7 +47,8 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
     { text: 'New', value: 'new' },
     { text: 'Contacted', value: 'contacted' },
     { text: 'Qualified', value: 'qualified' },
-    { text: 'Lost', value: 'lost' },
+    { text: 'Won', value: 'won' },
+    { text: 'Not Interested', value: 'not_interested' },
   ];
 
   const serviceTypeFilters = [
@@ -86,7 +87,23 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
       key: 'status',
       filters: statusFilters,
       onFilter: (value, record) => record.status === value,
-      render: (status) => <Tag color={status === 'new' ? 'blue' : 'green'}>{status}</Tag>,
+      render: (status) => {
+  const colorMap = {
+    new: 'blue',
+    contacted: 'gold',
+    qualified: 'purple',
+    won: 'green',
+    not_interested: 'red',
+  };
+  const labelMap = {
+    new: 'New',
+    contacted: 'Contacted',
+    qualified: 'Qualified',
+    won: 'Won',
+    not_interested: 'Not Interested',
+  };
+  return <Tag color={colorMap[status] || 'default'}>{labelMap[status] || status}</Tag>;
+},
     },
     {
       title: 'Follow-up Date',

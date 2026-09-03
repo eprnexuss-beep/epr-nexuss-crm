@@ -13,11 +13,10 @@ otherServiceType: String,
   email: String,
   source: String,
   status: {
-    type: String,
-    enum: ['new', 'contacted', 'qualified', 'lost'],
-    default: 'new'
-  },
-
+  type: String,
+  enum: ['new', 'contacted', 'qualified', 'won', 'not_interested'],
+  default: 'new'
+},
   // Support Multiple Follow-ups
   followUps: [{
     date: {

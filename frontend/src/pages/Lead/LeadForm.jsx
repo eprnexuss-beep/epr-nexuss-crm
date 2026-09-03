@@ -149,7 +149,8 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
           <Option value="new">New</Option>
           <Option value="contacted">Contacted</Option>
           <Option value="qualified">Qualified</Option>
-          <Option value="lost">Lost</Option>
+          <Option value="won">Won</Option>
+          <Option value="not_interested">Not Interested</Option>
         </Select>
       </Form.Item>
 
