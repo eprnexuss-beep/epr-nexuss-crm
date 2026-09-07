@@ -3,7 +3,7 @@ const Lead = require('../../models/erpModels/Lead');
 
 const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN;
-const EMPLOYEES_ROTATION = ['Aman', 'Aina', 'Bhanu'];
+const EMPLOYEES_ROTATION = ['Aman', 'Aina', 'Bhanu', 'Anurag', 'Affan', 'Tabish Sir']; // Add more employees as needed
 
 // Simple in-memory rotation (resets on server restart)
 let lastAssignedIndex = -1;

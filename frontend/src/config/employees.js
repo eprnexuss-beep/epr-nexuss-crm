@@ -4,4 +4,5 @@ export const EMPLOYEES = [
   'Aina',
   'Affan',
   'Aman',
+  'Tabish Sir',
 ];
