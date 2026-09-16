@@ -1,9 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button, Modal, Descriptions, Tag, Space, Typography } from 'antd';
 import LeadDataTable from './LeadDataTable';
 import LeadForm from './LeadForm';
 import dayjs from 'dayjs';
 import LeadImport from '@/components/LeadImport/LeadImport';
+import { useSearchParams } from 'react-router-dom';
+import axios from 'axios';
 
 const { Text } = Typography;
 
@@ -13,6 +15,25 @@ const Lead = () => {
   const [editingLead, setEditingLead] = useState(null);
   const [viewingLead, setViewingLead] = useState(null);
   const tableRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const API_URL = import.meta.env.VITE_FILE_BASE_URL;
+
+  useEffect(() => {
+    const openLeadId = searchParams.get('openLead');
+    if (openLeadId) {
+      axios.get(`${API_URL}lead/${openLeadId}`)
+        .then(res => {
+          setEditingLead(res.data.data);
+          setIsModalOpen(true);
+          searchParams.delete('openLead');
+          setSearchParams(searchParams, { replace: true });
+        })
+        .catch(() => {
+          searchParams.delete('openLead');
+          setSearchParams(searchParams, { replace: true });
+        });
+    }
+  }, [searchParams]);
 
   const showModal = () => {
     setEditingLead(null);
@@ -80,7 +101,6 @@ const Lead = () => {
       </Modal>
 
       {/* View Details Modal */}
-      {/* View Details Modal */}
       <Modal
         title="Lead Details"
         open={isDetailModalOpen}
@@ -136,8 +156,6 @@ const Lead = () => {
               })()}
             </Descriptions.Item>
 
-            {/* Fixed: Show Next Follow-up Date & Message */}
-            {/* Show Latest Upcoming Follow-up */}
             <Descriptions.Item label="Follow-up Date">
               {(() => {
                 if (!viewingLead.followUps || viewingLead.followUps.length === 0) return '-';
@@ -145,7 +163,7 @@ const Lead = () => {
                 const today = new Date();
                 const upcoming = viewingLead.followUps
                   .filter(fu => fu.date && new Date(fu.date) >= today)
-                  .sort((a, b) => new Date(b.date) - new Date(a.date)); // Latest first
+                  .sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 return upcoming.length > 0
                   ? dayjs(upcoming[0].date).format('DD/MM/YYYY hh:mm A')
@@ -161,7 +179,7 @@ const Lead = () => {
                 const today = new Date();
                 const upcoming = viewingLead.followUps
                   .filter(fu => fu.date && new Date(fu.date) >= today)
-                  .sort((a, b) => new Date(b.date) - new Date(a.date)); // Latest first
+                  .sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 return upcoming.length > 0 && upcoming[0].message
                   ? upcoming[0].message

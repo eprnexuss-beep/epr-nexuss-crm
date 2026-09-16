@@ -1,12 +1,15 @@
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Table, Tag, Button, Space, Popconfirm, message } from 'antd';
 import axios from 'axios';
+import { useSearchParams } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_FILE_BASE_URL;
 
 const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
 
   const fetchLeads = async () => {
     try {
@@ -50,6 +53,17 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
     { text: 'Won', value: 'won' },
     { text: 'Not Interested', value: 'not_interested' },
   ];
+  const filteredLeads = searchQuery
+  ? leads.filter(lead => {
+      const q = searchQuery.toLowerCase();
+      return (
+        (lead.leadName && lead.leadName.toLowerCase().includes(q)) ||
+        (lead.phone && lead.phone.toLowerCase().includes(q)) ||
+        (lead.email && lead.email.toLowerCase().includes(q)) ||
+        (lead.assignedTo && lead.assignedTo.toLowerCase().includes(q))
+      );
+    })
+  : leads;
 
   const serviceTypeFilters = [
     { text: 'Lithium Recycling', value: 'Lithium Recycling' },
@@ -88,22 +102,22 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
       filters: statusFilters,
       onFilter: (value, record) => record.status === value,
       render: (status) => {
-  const colorMap = {
-    new: 'blue',
-    contacted: 'gold',
-    qualified: 'purple',
-    won: 'green',
-    not_interested: 'red',
-  };
-  const labelMap = {
-    new: 'New',
-    contacted: 'Contacted',
-    qualified: 'Qualified',
-    won: 'Won',
-    not_interested: 'Not Interested',
-  };
-  return <Tag color={colorMap[status] || 'default'}>{labelMap[status] || status}</Tag>;
-},
+        const colorMap = {
+          new: 'blue',
+          contacted: 'gold',
+          qualified: 'purple',
+          won: 'green',
+          not_interested: 'red',
+        };
+        const labelMap = {
+          new: 'New',
+          contacted: 'Contacted',
+          qualified: 'Qualified',
+          won: 'Won',
+          not_interested: 'Not Interested',
+        };
+        return <Tag color={colorMap[status] || 'default'}>{labelMap[status] || status}</Tag>;
+      },
     },
     {
       title: 'Follow-up Date',
@@ -160,7 +174,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
   return (
     <Table
       columns={columns}
-      dataSource={leads}
+      dataSource={filteredLeads}
       loading={loading}
       rowKey="_id"
       onRow={(record) => ({

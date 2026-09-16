@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { Avatar, Dropdown, Layout, Badge, Tooltip, List, Typography } from 'antd';
+import { Avatar, Dropdown, Layout, Badge, Tooltip, List, Typography, Input } from 'antd';
 import { BellOutlined, UserOutlined, LogoutOutlined, ToolOutlined } from '@ant-design/icons';
 import { useState, useEffect, useCallback } from 'react';
 import storePersist from '@/redux/storePersist';
@@ -10,7 +10,6 @@ import { FILE_BASE_URL } from '@/config/serverApiConfig';
 import useLanguage from '@/locale/useLanguage';
 
 import UpgradeButton from './UpgradeButton';
-// import { FILE_BASE_URL } from '@/config/serverApiConfig';
 
 const { Text } = Typography;
 
@@ -18,9 +17,16 @@ export default function HeaderContent() {
   const currentAdmin = useSelector(selectCurrentAdmin);
   const { Header } = Layout;
   const translate = useLanguage();
+  const navigate = useNavigate();
 
   const [followUpNotifications, setFollowUpNotifications] = useState([]);
   const [bellVisible, setBellVisible] = useState(false);
+
+  const handleSearch = (value) => {
+    if (value.trim()) {
+      navigate(`/lead?search=${encodeURIComponent(value.trim())}`);
+    }
+  };
 
   // Reusable function to fetch upcoming follow-ups
   const fetchUpcomingFollowUps = useCallback(async () => {
@@ -45,7 +51,6 @@ export default function HeaderContent() {
           );
 
           if (pendingFollowUps.length > 0) {
-            // Sort by date DESC (Latest first)
             const sortedFollowUps = pendingFollowUps.sort((a, b) =>
               new Date(b.date) - new Date(a.date)
             );
@@ -72,16 +77,12 @@ export default function HeaderContent() {
     }
   }, []);
 
-  // Initial fetch when component mounts
   useEffect(() => {
     fetchUpcomingFollowUps();
   }, [fetchUpcomingFollowUps]);
 
-  // Expose refresh function globally so Lead page can call it after update
   useEffect(() => {
     window.refreshNotifications = fetchUpcomingFollowUps;
-
-    // Cleanup when component unmounts
     return () => {
       delete window.refreshNotifications;
     };
@@ -157,8 +158,8 @@ export default function HeaderContent() {
         alignItems: 'center',
       }}
     >
-      {/* Notification Bell */}
-
+      {/* Search bar */}
+      
 
       {/* Profile Dropdown */}
       <Dropdown
@@ -180,6 +181,8 @@ export default function HeaderContent() {
           {currentAdmin?.name?.charAt(0)?.toUpperCase()}
         </Avatar>
       </Dropdown>
+
+      {/* Notification Bell */}
       <Dropdown
         trigger={['click']}
         open={bellVisible}
@@ -199,7 +202,13 @@ export default function HeaderContent() {
             <List
               dataSource={followUpNotifications}
               renderItem={item => (
-                <List.Item style={{ padding: '12px 16px', cursor: 'pointer' }}>
+                <List.Item
+                  style={{ padding: '12px 16px', cursor: 'pointer' }}
+                  onClick={() => {
+                    setBellVisible(false);
+                    navigate(`/lead?openLead=${item._id}`);
+                  }}
+                >
                   <div style={{ width: '100%' }}>
                     <Text strong>{item.leadName}</Text>
                     <div style={{ fontSize: '12px', color: '#666' }}>
@@ -230,8 +239,14 @@ export default function HeaderContent() {
           </Badge>
         </Tooltip>
       </Dropdown>
+      <Input.Search
+        placeholder="Search leads by name, phone, email..."
+        onSearch={handleSearch}
+        style={{ width: 260 }}
+        allowClear
+      />
 
       <UpgradeButton />
     </Header>
   );
-}
+} 
