@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { generate: uniqueId } = require('shortid');
 
 const updateProfilePassword = async (userModel, req, res) => {
+  console.log('updateProfilePassword called for userModel:', userModel);
   const UserPassword = mongoose.model(userModel + 'Password');
 
   const reqUserName = userModel.toLowerCase();
