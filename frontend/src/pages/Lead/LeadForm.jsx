@@ -79,7 +79,10 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
           }))
           .filter(fu => fu.date),
         updates: updates
-          .map(u => ({ message: u.message?.trim() || '' }))
+          .map(u => ({
+            message: u.message?.trim() || '',
+            date: u.date || new Date().toISOString(), // preserve existing date, only stamp new ones with "now"
+          }))
           .filter(u => u.message)
       };
 

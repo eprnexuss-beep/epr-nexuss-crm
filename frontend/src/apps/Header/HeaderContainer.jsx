@@ -4,6 +4,7 @@ import { Avatar, Dropdown, Layout, Badge, Tooltip, List, Typography, Input } fro
 import { BellOutlined, UserOutlined, LogoutOutlined, ToolOutlined } from '@ant-design/icons';
 import { useState, useEffect, useCallback } from 'react';
 import storePersist from '@/redux/storePersist';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
 import { FILE_BASE_URL } from '@/config/serverApiConfig';
@@ -18,6 +19,9 @@ export default function HeaderContent() {
   const { Header } = Layout;
   const translate = useLanguage();
   const navigate = useNavigate();
+const handleBack = () => {
+  navigate(-1);
+};
 
   const [followUpNotifications, setFollowUpNotifications] = useState([]);
   const [bellVisible, setBellVisible] = useState(false);
@@ -147,40 +151,44 @@ export default function HeaderContent() {
   ];
 
   return (
-    <Header
+  <Header
+    style={{
+      padding: '20px',
+      background: '#ffffff',
+      display: 'flex',
+      flexDirection: 'row',          // normal left → right
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: '15px',
+    }}
+  >
+    {/* LEFT SIDE */}
+    <Tooltip title="Go back">
+      <ArrowLeftOutlined
+        onClick={handleBack}
+        style={{
+          fontSize: '20px',
+          cursor: 'pointer',
+          padding: '8px',
+        }}
+      />
+    </Tooltip>
+
+    {/* RIGHT SIDE */}
+    <div
       style={{
-        padding: '20px',
-        background: '#ffffff',
         display: 'flex',
-        flexDirection: 'row-reverse',
-        justifyContent: 'flex-start',
-        gap: '15px',
         alignItems: 'center',
+        gap: '15px',
+        marginLeft: 'auto',
       }}
     >
-      {/* Search bar */}
-      
-
-      {/* Profile Dropdown */}
-      <Dropdown
-        menu={{ items }}
-        trigger={['click']}
-        placement="bottomRight"
-      >
-        <Avatar
-          className="last"
-          src={currentAdmin?.photo ? FILE_BASE_URL + currentAdmin?.photo : undefined}
-          style={{
-            color: '#f56a00',
-            backgroundColor: currentAdmin?.photo ? 'none' : '#fde3cf',
-            boxShadow: 'rgba(150, 190, 238, 0.35) 0px 0px 10px 2px',
-            cursor: 'pointer',
-          }}
-          size="large"
-        >
-          {currentAdmin?.name?.charAt(0)?.toUpperCase()}
-        </Avatar>
-      </Dropdown>
+      <Input.Search
+        placeholder="Search leads by name, phone, email..."
+        onSearch={handleSearch}
+        style={{ width: 260 }}
+        allowClear
+      />
 
       {/* Notification Bell */}
       <Dropdown
@@ -188,20 +196,28 @@ export default function HeaderContent() {
         open={bellVisible}
         onOpenChange={setBellVisible}
         dropdownRender={() => (
-          <div style={{
-            background: '#fff',
-            borderRadius: '8px',
-            boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
-            width: 340,
-            maxHeight: 450,
-            overflow: 'auto'
-          }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', fontWeight: 'bold' }}>
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: '8px',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
+              width: 340,
+              maxHeight: 450,
+              overflow: 'auto',
+            }}
+          >
+            <div
+              style={{
+                padding: '12px 16px',
+                borderBottom: '1px solid #f0f0f0',
+                fontWeight: 'bold',
+              }}
+            >
               Upcoming Follow-ups ({followUpNotifications.length})
             </div>
             <List
               dataSource={followUpNotifications}
-              renderItem={item => (
+              renderItem={(item) => (
                 <List.Item
                   style={{ padding: '12px 16px', cursor: 'pointer' }}
                   onClick={() => {
@@ -212,10 +228,17 @@ export default function HeaderContent() {
                   <div style={{ width: '100%' }}>
                     <Text strong>{item.leadName}</Text>
                     <div style={{ fontSize: '12px', color: '#666' }}>
-                      {item.assignedTo} • {new Date(item.followUpDate).toLocaleString()}
+                      {item.assignedTo} •{' '}
+                      {new Date(item.followUpDate).toLocaleString()}
                     </div>
                     {item.followUpMessage && (
-                      <div style={{ fontSize: '13px', marginTop: 4, color: '#555' }}>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          marginTop: 4,
+                          color: '#555',
+                        }}
+                      >
                         {item.followUpMessage.substring(0, 85)}...
                       </div>
                     )}
@@ -228,25 +251,45 @@ export default function HeaderContent() {
         )}
       >
         <Tooltip title="Follow-up Notifications">
-          <Badge count={followUpNotifications.length} overflowCount={99} dot={followUpNotifications.length > 0}>
+          <Badge
+            count={followUpNotifications.length}
+            overflowCount={99}
+            dot={followUpNotifications.length > 0}
+          >
             <BellOutlined
               style={{
                 fontSize: '22px',
                 cursor: 'pointer',
-                padding: '8px'
+                padding: '8px',
               }}
             />
           </Badge>
         </Tooltip>
       </Dropdown>
-      <Input.Search
-        placeholder="Search leads by name, phone, email..."
-        onSearch={handleSearch}
-        style={{ width: 260 }}
-        allowClear
-      />
+
+      {/* Profile Dropdown */}
+      <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
+        <Avatar
+          className="last"
+          src={
+            currentAdmin?.photo
+              ? FILE_BASE_URL + currentAdmin?.photo
+              : undefined
+          }
+          style={{
+            color: '#f56a00',
+            backgroundColor: currentAdmin?.photo ? 'none' : '#fde3cf',
+            boxShadow: 'rgba(150, 190, 238, 0.35) 0px 0px 10px 2px',
+            cursor: 'pointer',
+          }}
+          size="large"
+        >
+          {currentAdmin?.name?.charAt(0)?.toUpperCase()}
+        </Avatar>
+      </Dropdown>
 
       <UpgradeButton />
-    </Header>
-  );
+    </div>
+  </Header>
+);
 } 
