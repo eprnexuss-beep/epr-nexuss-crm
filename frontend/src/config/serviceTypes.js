@@ -5,5 +5,6 @@ export const SERVICE_TYPES = [
   'Plastic Recycling',
   'E-waste Recycling',
   'RVSF',
+  'Digital Marketing',
   'Other',
 ];

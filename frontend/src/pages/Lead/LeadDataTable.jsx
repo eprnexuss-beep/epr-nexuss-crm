@@ -72,6 +72,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
     { text: 'E-waste Recycling', value: 'E-waste Recycling' },
     { text: 'RVSF', value: 'RVSF' },
     { text: 'Biogas', value: 'Biogas' },
+    { text: 'Digital Marketing', value: 'Digital Marketing' },
     { text: 'Other', value: 'Other' },
   ];
 

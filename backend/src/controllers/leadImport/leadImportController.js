@@ -3,7 +3,7 @@ const fs = require('fs');
 const Lead = require('../../models/erpModels/Lead');
 
 const VALID_EMPLOYEES = ['Bhanu', 'Anurag', 'Aina', 'Affan', 'Aman','Tabish Sir', 'Sakib'];
-const VALID_SERVICE_TYPES = ['Lithium Recycling', 'Tyre Recycling', 'Biogas', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Other'];
+const VALID_SERVICE_TYPES = ['Lithium Recycling', 'Tyre Recycling', 'Biogas', 'Plastic Recycling', 'E-waste Recycling', 'RVSF','Digital Marketing', 'Other'];
 
 exports.importLeads = async (req, res) => {
   try {
