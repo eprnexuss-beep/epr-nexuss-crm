@@ -34,7 +34,7 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
 
     const [user, userPassword] = await Promise.all([userPromise, userPasswordPromise]);
 
-    if (!user)
+    if (!user || !user.enabled || !userPassword)
       return res.status(401).json({
         success: false,
         result: null,

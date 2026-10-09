@@ -1,11 +1,11 @@
-const express = require('express');
-const router = express.Router();
-const leadController = require('../../controllers/erpControllers/leadController');
-
-router.post('/', leadController.create);
-router.get('/', leadController.list);
-router.get('/:id', leadController.read);
-router.put('/:id', leadController.update);
-router.delete('/:id', leadController.delete);
-
+const router = require('express').Router();
+const c = require('../../controllers/erpControllers/leadController');
+const { requireAdmin } = require('../../middlewares/roleAccess');
+router.get('/dashboard', c.dashboard);
+router.post('/assign', requireAdmin, c.assign);
+router.post('/', c.create);
+router.get('/', c.list);
+router.get('/:id', c.read);
+router.put('/:id', c.update);
+router.delete('/:id', requireAdmin, c.delete);
 module.exports = router;

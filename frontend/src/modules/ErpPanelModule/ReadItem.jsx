@@ -1,3 +1,4 @@
+import { downloadDocument } from '@/utils/downloadDocument';
 import { useState, useEffect } from 'react';
 import { Divider } from 'antd';
 
@@ -152,9 +153,8 @@ export default function ReadItem({ config, selectedItem }) {
           <Button
             key={`${uniqueId()}`}
             onClick={() => {
-              window.open(
-                `${DOWNLOAD_BASE_URL}${entity}/${entity}-${currentErp._id}.pdf`,
-                '_blank'
+              downloadDocument(
+                `${DOWNLOAD_BASE_URL}${entity}/${entity}-${currentErp._id}.pdf`
               );
             }}
             icon={<FilePdfOutlined />}

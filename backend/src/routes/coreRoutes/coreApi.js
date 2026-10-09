@@ -3,6 +3,13 @@ const express = require('express');
 const { catchErrors } = require('@/handlers/errorHandlers');
 
 const router = express.Router();
+const { requireAdmin } = require('../../middlewares/roleAccess');
+router.use((req, res, next) => {
+  if (!req.path.startsWith('/admin/') && !req.path.startsWith('/setting/')) return next();
+  const profile = req.path.startsWith('/admin/profile/');
+  const settingsRead = req.method === 'GET' && req.path.startsWith('/setting/');
+  return profile || settingsRead ? next() : requireAdmin(req, res, next);
+});
 
 const adminController = require('@/controllers/coreControllers/adminController');
 const settingController = require('@/controllers/coreControllers/settingController');

@@ -5,11 +5,13 @@ import LeadForm from './LeadForm';
 import dayjs from 'dayjs';
 import LeadImport from '@/components/LeadImport/LeadImport';
 import { useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import { crmApi, accountApi } from '@/utils/crmApi';
+import { useRole } from '@/utils/roleAccess';
 
 const { Text } = Typography;
 
-const Lead = () => {
+const Lead = ({ notInterestedOnly = false }) => {
+  const { isAdmin } = useRole();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
@@ -21,7 +23,7 @@ const Lead = () => {
   useEffect(() => {
     const openLeadId = searchParams.get('openLead');
     if (openLeadId) {
-      axios.get(`${API_URL}lead/${openLeadId}`)
+      crmApi.get(`lead/${openLeadId}`)
         .then(res => {
           setEditingLead(res.data.data);
           setIsModalOpen(true);
@@ -69,17 +71,18 @@ const Lead = () => {
   return (
     <>
       <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Leads</h1>
-        <Space>
-          <LeadImport onSuccess={() => tableRef.current?.refresh()} />
+        <h1>{notInterestedOnly ? 'Not Interested Leads' : 'Leads'}</h1>
+        {!notInterestedOnly && <Space>
+          {isAdmin && <LeadImport onSuccess={() => tableRef.current?.refresh()} />}
           <Button type="primary" onClick={showModal}>
             + Add New Lead
           </Button>
-        </Space>
+        </Space>}
       </div>
 
       <LeadDataTable
         ref={tableRef}
+        notInterestedOnly={notInterestedOnly}
         onEdit={handleEdit}
         onViewDetails={handleViewDetails}
       />

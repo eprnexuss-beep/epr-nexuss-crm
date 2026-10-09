@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const leadSchema = new mongoose.Schema({
   leadName: { type: String, required: true },
   assignedTo: String,
+  assignedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', index: true },
   serviceType: {
   type: String,
   enum: ['Lithium Recycling', 'Tyre Recycling', 'Biogas', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Digital Marketing', 'Other'],

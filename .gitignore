@@ -1,6 +1,7 @@
-backend/.env
-frontend/.env   
-# Environment files
+node_modules/
 .env
 .env.*
 !.env.example
+dist/
+uploads/
+*.zip

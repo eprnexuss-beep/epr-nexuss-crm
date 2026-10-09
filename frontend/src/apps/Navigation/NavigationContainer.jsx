@@ -11,6 +11,7 @@ import logoText from '@/style/images/logo-text.svg';
 import useResponsive from '@/hooks/useResponsive';
 
 import {
+  StopOutlined,
   SettingOutlined,
   CustomerServiceOutlined,
   ContainerOutlined,
@@ -27,6 +28,8 @@ import {
   WalletOutlined,
   ReconciliationOutlined,
 } from '@ant-design/icons';
+
+import { useRole } from '@/utils/roleAccess';
 
 const { Sider } = Layout;
 
@@ -48,6 +51,7 @@ function Sidebar({ collapsible, isMobile = false }) {
   const translate = useLanguage();
   const navigate = useNavigate();
 
+  const { isAdmin } = useRole();
   const items = [
     {
       key: 'dashboard',
@@ -65,6 +69,16 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/lead'}>Leads</Link>,
     },
 
+    {
+      key: 'not-interested-leads',
+      icon: <StopOutlined />,
+      label: <Link to={'/not-interested-leads'}>Not Interested Leads</Link>,
+    },
+    {
+      key: 'employees',
+      icon: <UserOutlined />,
+      label: <Link to={'/employees'}>Employees</Link>,
+    },
     {
       key: 'invoice',
       icon: <ContainerOutlined />,
@@ -172,7 +186,7 @@ function Sidebar({ collapsible, isMobile = false }) {
         )} */}
       </div>
       <Menu
-        items={items}
+        items={isAdmin ? items : items.filter(item => ['dashboard', 'lead', 'not-interested-leads', 'about'].includes(item.key))}
         mode="inline"
         theme={'light'}
         selectedKeys={[currentPath]}

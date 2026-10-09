@@ -1,6 +1,8 @@
 const express = require('express');
 const { catchErrors } = require('@/handlers/errorHandlers');
 const router = express.Router();
+const { requireAdmin } = require('../../middlewares/roleAccess');
+router.use((req, res, next) => req.path.startsWith('/lead/') ? next() : requireAdmin(req, res, next));
 
 const leadController = require('@/controllers/erpControllers/leadController');
 const appControllers = require('@/controllers/appControllers');
@@ -31,6 +33,11 @@ routesList.forEach(({ entity, controllerName }) => {
   routerApp(entity, controller);
 });
 // Register Lead routes
-routerApp('lead', leadController);
+router.post('/lead/create', leadController.create);
+router.get('/lead/read/:id', leadController.read);
+router.patch('/lead/update/:id', leadController.update);
+router.delete('/lead/delete/:id', requireAdmin, leadController.delete);
+router.get('/lead/list', leadController.list);
+router.get('/lead/listAll', leadController.listAll);
 
 module.exports = router;

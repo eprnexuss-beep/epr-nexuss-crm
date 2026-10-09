@@ -5,6 +5,8 @@ const Logout = lazy(() => import('@/pages/Logout.jsx'));
 const NotFound = lazy(() => import('@/pages/NotFound.jsx'));
 
 const Customer = lazy(() => import('@/pages/Customer'));
+const RoleDashboard = lazy(() => import('@/pages/RoleDashboard'));
+const Employees = lazy(() => import('@/pages/Employees'));
 const Lead = lazy(() => import('@/pages/Lead'));
 const Invoice = lazy(() => import('@/pages/Invoice'));
 const InvoiceCreate = lazy(() => import('@/pages/Invoice/InvoiceCreate'));
@@ -26,12 +28,15 @@ let routes = {
     { path: '/login', element: <Navigate to="/" /> },
     { path: '/logout', element: <Logout /> },
     { path: '/about', element: <About /> },
-    { path: '/', element: <Invoice /> },
+    { path: '/', element: <RoleDashboard /> },
+    { path: '/employees', element: <Employees /> },
     { path: '/customer', element: <Customer /> },
     {
       path: '/lead',
-      element: <Lead />,
+      element: <Lead key="active" />,
     },
+
+    { path: '/not-interested-leads', element: <Lead key="not-interested" notInterestedOnly /> },
 
     { path: '/invoice', element: <Invoice /> },
     { path: '/invoice/create', element: <InvoiceCreate /> },

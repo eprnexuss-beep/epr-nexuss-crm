@@ -3,7 +3,7 @@ const fs = require('fs');
 const Lead = require('../../models/erpModels/Lead');
 
 const VALID_EMPLOYEES = ['Bhanu', 'Anurag', 'Aina', 'Affan', 'Aman','Tabish Sir', 'Sakib'];
-const VALID_SERVICE_TYPES = ['Lithium Recycling', 'Tyre Recycling', 'Biogas', 'Plastic Recycling', 'E-waste Recycling', 'RVSF','Digital Marketing', 'Other'];
+const VALID_SERVICE_TYPES = ['Lithium Recycling', 'Tyre Recycling', 'Biogas', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Digital Marketing', 'Other'];
 
 exports.importLeads = async (req, res) => {
   try {
@@ -16,6 +16,7 @@ exports.importLeads = async (req, res) => {
     const sheetName = workbook.SheetNames[0];
     const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
+    const employees = await require('mongoose').model('Admin').find({ role: 'employee', enabled: true, removed: false });
     let imported = 0;
     let skipped = [];
 
@@ -25,8 +26,12 @@ exports.importLeads = async (req, res) => {
         name => name.toLowerCase() === String(rawAssignedTo || '').trim().toLowerCase()
       );
 
+      const accountMatches = employees.filter(user =>
+        [user.name, [user.name, user.surname].filter(Boolean).join(' '), user.email]
+          .some(name => name.toLowerCase() === String(rawAssignedTo || '').trim().toLowerCase()));
+      const account = accountMatches.length === 1 ? accountMatches[0] : null;
       const VALID_STATUSES = ['new', 'contacted', 'qualified', 'won', 'not_interested'];
-      const rawStatus = String(row['Status'] || row['status'] || '').trim().toLowerCase();
+      const rawStatus = String(row['Status'] || row['status'] || '').trim().toLowerCase().replace(/\s+/g, '_');
       const matchedStatus = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'new';
 
       const rawServiceType = row['Service Type'] || row['serviceType'] || row['Service'];
@@ -40,8 +45,10 @@ exports.importLeads = async (req, res) => {
         leadName: row['Name'] || row['name'] || row['Lead Name'] || row['leadName'],
         email: row['Email'] || row['email'],
         phone: row['Phone'] || row['phone'],
-        assignedTo: matchedEmployee || '',
-        serviceType: matchedServiceType || '',
+        assignedTo: account ? [account.name, account.surname].filter(Boolean).join(' ') : (matchedEmployee || String(rawAssignedTo || '').trim()),
+        assignedUser: account ? account._id : null,
+        createdBy: req.admin._id,
+        serviceType: matchedServiceType || undefined,
         status: matchedStatus,
         source: row['Source'] || row['source'] || 'Sheet Import',
         updates: rawUpdate && String(rawUpdate).trim()
@@ -74,5 +81,7 @@ exports.importLeads = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  } finally {
+    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
   }
 };

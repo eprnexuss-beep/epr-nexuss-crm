@@ -10,7 +10,7 @@ const updatePassword = async (userModel, req, res) => {
 
   let { password } = req.body;
 
-  if (password.length < 8)
+  if (typeof password !== 'string' || password.length < 8)
     return res.status(400).json({
       msg: 'The password needs to be at least 8 characters long.',
     });
@@ -22,6 +22,8 @@ const updatePassword = async (userModel, req, res) => {
   const UserPasswordData = {
     password: passwordHash,
     salt: salt,
+    loggedSessions: [],
+    resetToken: '',
   };
 
   const resultPassword = await UserPassword.findOneAndUpdate(

@@ -8,6 +8,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-router.route('/import').post(upload.single('file'), importLeads);
+const { requireAdmin } = require('../../middlewares/roleAccess');
+router.route('/import').post(requireAdmin, upload.single('file'), importLeads);
 
 module.exports = router;

@@ -1,3 +1,4 @@
+import { downloadDocument } from '@/utils/downloadDocument';
 import { useEffect } from 'react';
 import {
   EyeOutlined,
@@ -91,7 +92,7 @@ export default function DataTable({ config, extra = [] }) {
     navigate(`/${entity}/update/${record._id}`);
   };
   const handleDownload = (record) => {
-    window.open(`${DOWNLOAD_BASE_URL}${entity}/${entity}-${record._id}.pdf`, '_blank');
+    downloadDocument(`${DOWNLOAD_BASE_URL}${entity}/${entity}-${record._id}.pdf`);
   };
 
   const handleDelete = (record) => {

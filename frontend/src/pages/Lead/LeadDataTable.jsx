@@ -1,19 +1,35 @@
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { Table, Tag, Button, Space, Popconfirm, message } from 'antd';
-import axios from 'axios';
+import { Table, Tag, Button, Space, Popconfirm, Select, message } from 'antd';
+import { crmApi, accountApi } from '@/utils/crmApi';
+import { useRole } from '@/utils/roleAccess';
 import { useSearchParams } from 'react-router-dom';
+
+import { filterLeadsByStatus } from './leadStatus.mjs';
 
 const API_URL = import.meta.env.VITE_FILE_BASE_URL;
 
-const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
+const LeadDataTable = forwardRef(({ onEdit, onViewDetails, notInterestedOnly = false }, ref) => {
+  const { isAdmin } = useRole();
+  const [employees, setEmployees] = useState([]), [selectedKeys, setSelectedKeys] = useState([]), [employeeId, setEmployeeId] = useState(null), [assigning, setAssigning] = useState(false);
+  useEffect(() => {
+    if (isAdmin) accountApi.get('employees').then(res => setEmployees(res.data.data)).catch(() => message.error('Failed to load employee accounts'));
+  }, [isAdmin]);
+  const assignSelected = async () => {
+    if (!selectedKeys.length || !employeeId) return message.warning('Select leads and an employee');
+    setAssigning(true);
+    try { await crmApi.post('lead/assign', { leadIds: selectedKeys, employeeId }); message.success('Leads assigned successfully'); setSelectedKeys([]); await fetchLeads(); }
+    catch (e) { message.error(e.response?.data?.message || 'Assignment failed'); }
+    finally { setAssigning(false); }
+  };
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
 
   const fetchLeads = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}lead`);
+      const response = await crmApi.get(`lead`);
       setLeads(response.data.data || []);
     } catch (error) {
       console.error('Error fetching leads:', error);
@@ -33,7 +49,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_URL}lead/${id}`);
+      await crmApi.delete(`lead/${id}`);
       message.success('Lead deleted successfully');
       fetchLeads();
     } catch (error) {
@@ -42,8 +58,10 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
     }
   };
 
+  const pageLeads = filterLeadsByStatus(leads, notInterestedOnly);
+
   const assignedToFilters = [...new Set(
-    leads.map(lead => lead.assignedTo).filter(name => name && name.trim() !== '')
+    pageLeads.map(lead => lead.assignedTo).filter(name => name && name.trim() !== '')
   )].sort().map(name => ({ text: name, value: name }));
 
   const statusFilters = [
@@ -51,10 +69,10 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
     { text: 'Contacted', value: 'contacted' },
     { text: 'Qualified', value: 'qualified' },
     { text: 'Won', value: 'won' },
-    { text: 'Not Interested', value: 'not_interested' },
+    ...(notInterestedOnly ? [{ text: 'Not Interested', value: 'not_interested' }] : []),
   ];
   const filteredLeads = searchQuery
-  ? leads.filter(lead => {
+  ? pageLeads.filter(lead => {
       const q = searchQuery.toLowerCase();
       return (
         (lead.leadName && lead.leadName.toLowerCase().includes(q)) ||
@@ -63,7 +81,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
         (lead.assignedTo && lead.assignedTo.toLowerCase().includes(q))
       );
     })
-  : leads;
+  : pageLeads;
 
   const serviceTypeFilters = [
     { text: 'Lithium Recycling', value: 'Lithium Recycling' },
@@ -156,7 +174,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
           <Button size="small" onClick={(e) => { e.stopPropagation(); onEdit(record); }}>
             Edit
           </Button>
-          <Popconfirm
+          {isAdmin && <Popconfirm
             title="Delete this lead?"
             okText="Yes"
             cancelText="No"
@@ -166,14 +184,22 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
             <Button size="small" danger onClick={(e) => e.stopPropagation()}>
               Delete
             </Button>
-          </Popconfirm>
+          </Popconfirm>}
         </Space>
       ),
     },
   ];
 
   return (
+    <>
+    {isAdmin && <Space wrap style={{ marginBottom: 16 }}>
+      <span>{selectedKeys.length} selected</span>
+      <Select style={{ minWidth: 260 }} placeholder="Assign to employee" value={employeeId} onChange={setEmployeeId} options={employees.filter(x => x.enabled).map(x => ({ value: x._id, label: `${x.name} ${x.surname || ''} — ${x.email}` }))} />
+      <Button type="primary" onClick={assignSelected} loading={assigning} disabled={!selectedKeys.length || !employeeId}>Assign Selected Leads</Button>
+      <Button onClick={() => setSelectedKeys([])} disabled={!selectedKeys.length}>Clear Selection</Button>
+    </Space>}
     <Table
+      rowSelection={isAdmin ? { selectedRowKeys: selectedKeys, onChange: setSelectedKeys, selections: [Table.SELECTION_ALL, Table.SELECTION_NONE] } : undefined}
       columns={columns}
       dataSource={filteredLeads}
       loading={loading}
@@ -189,6 +215,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails }, ref) => {
       })}
       scroll={{ x: true }}
     />
+    </>
   );
 });
 

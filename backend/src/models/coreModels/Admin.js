@@ -30,8 +30,11 @@ const adminSchema = new Schema({
   role: {
     type: String,
     default: 'owner',
-    enum: ['owner'],
+    enum: ['owner', 'admin', 'employee'],
   },
 });
+
+// Existing owner accounts remain valid; concurrent employee creation is email-unique.
+adminSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { role: 'employee' } });
 
 module.exports = mongoose.model('Admin', adminSchema);

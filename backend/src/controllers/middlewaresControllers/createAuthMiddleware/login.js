@@ -28,7 +28,7 @@ const login = async (req, res, { userModel }) => {
     });
   }
 
-  const user = await UserModel.findOne({ email: email, removed: false });
+  const user = await UserModel.findOne({ email: String(email).trim().toLowerCase(), removed: false });
 
   // console.log(user);
   if (!user)
@@ -48,7 +48,8 @@ const login = async (req, res, { userModel }) => {
     });
 
   //  authUser if your has correct password
-  authUser(req, res, {
+  if (!databasePassword) return res.status(403).json({ success: false, message: 'Invalid credentials' });
+  return authUser(req, res, {
     user,
     databasePassword,
     password,

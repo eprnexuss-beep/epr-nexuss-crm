@@ -1,3 +1,4 @@
+import { downloadDocument } from '@/utils/downloadDocument';
 import { Dropdown, Table } from 'antd';
 
 import { request } from '@/request';
@@ -44,7 +45,7 @@ export default function RecentTable({ ...props }) {
     navigate(`/${entity}/update/${record._id}`);
   };
   const handleDownload = (record) => {
-    window.open(`${DOWNLOAD_BASE_URL}${entity}/${entity}-${record._id}.pdf`, '_blank');
+    downloadDocument(`${DOWNLOAD_BASE_URL}${entity}/${entity}-${record._id}.pdf`);
   };
 
   dataTableColumns = [

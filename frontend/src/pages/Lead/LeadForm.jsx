@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, DatePicker, Select, Button, message, Space, Card } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import { crmApi, accountApi } from '@/utils/crmApi';
+import { useRole } from '@/utils/roleAccess';
 import dayjs from 'dayjs';
 import { EMPLOYEES } from '@/config/employees';
 import { SERVICE_TYPES } from '@/config/serviceTypes';
@@ -10,6 +11,11 @@ const API_URL = import.meta.env.VITE_FILE_BASE_URL;
 const { Option } = Select;
 
 const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
+  const { user, isAdmin } = useRole();
+  const [employees, setEmployees] = useState([]);
+  useEffect(() => {
+    if (isAdmin) accountApi.get('employees').then(res => setEmployees(res.data.data)).catch(() => message.error('Failed to load employee accounts'));
+  }, [isAdmin]);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [followUps, setFollowUps] = useState([{ date: null, message: '', status: 'pending' }]);
@@ -21,7 +27,7 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
     if (initialValues) {
       form.setFieldsValue({
         leadName: initialValues.leadName,
-        assignedTo: initialValues.assignedTo,
+        assignedUser: initialValues.assignedUser || (initialValues.assignedTo ? `legacy:${initialValues.assignedTo}` : undefined),
         serviceType: initialValues.serviceType,
         otherServiceType: initialValues.otherServiceType,
         phone: initialValues.phone,
@@ -86,11 +92,19 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
           .filter(u => u.message)
       };
 
+      if (isAdmin) {
+        const selected = values.assignedUser;
+        payload.assignedUser = selected && !selected.startsWith('legacy:') ? selected : null;
+        payload.assignedTo = selected?.startsWith('legacy:') ? selected.slice(7) : '';
+      } else {
+        delete payload.assignedUser;
+        delete payload.assignedTo;
+      }
       if (isEdit && initialValues?._id) {
-        await axios.put(`${API_URL}lead/${initialValues._id}`, payload);
+        await crmApi.put(`lead/${initialValues._id}`, payload);
         message.success('Lead updated successfully');
       } else {
-        await axios.post(`${API_URL}lead`, payload);
+        await crmApi.post(`lead`, payload);
         message.success('Lead created successfully');
       }
 
@@ -110,13 +124,14 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
         <Input />
       </Form.Item>
 
-      <Form.Item name="assignedTo" label="Assigned To">
-        <Select placeholder="Select employee" allowClear>
-          {EMPLOYEES.map(name => (
-            <Option key={name} value={name}>{name}</Option>
+      {isAdmin ? <Form.Item name="assignedUser" label="Assigned To">
+        <Select placeholder="Select employee account" allowClear>
+          {employees.filter(employee => employee.enabled || employee._id === initialValues?.assignedUser).map(employee => (
+            <Option key={employee._id} value={employee._id}>{employee.name} {employee.surname || ''} — {employee.email}{!employee.enabled ? ' (Inactive)' : ''}</Option>
           ))}
+          {!initialValues?.assignedUser && initialValues?.assignedTo && <Option value={`legacy:${initialValues.assignedTo}`}>{initialValues.assignedTo} (Legacy — not linked)</Option>}
         </Select>
-      </Form.Item>
+      </Form.Item> : <Form.Item label="Assigned To"><Input value={[user?.name, user?.surname].filter(Boolean).join(' ')} disabled /></Form.Item>}
       <Form.Item name="serviceType" label="Service Type">
         <Select placeholder="Select service type" allowClear>
           {SERVICE_TYPES.map(type => (

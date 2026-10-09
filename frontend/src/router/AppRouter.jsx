@@ -6,16 +6,19 @@ import { Navigate, useLocation, useRoutes } from 'react-router-dom';
 import { useAppContext } from '@/context/appContext';
 
 import routes from './routes';
+import { useRole } from '@/utils/roleAccess';
 
 export default function AppRouter() {
   let location = useLocation();
   const { state: stateApp, appContextAction } = useAppContext();
   const { app } = appContextAction;
 
+  const { isAdmin } = useRole();
+  const employeePaths = ['/', '/login', '/logout', '/profile', '/lead', '/not-interested-leads', '/about', '*'];
   const routesList = [];
 
   Object.entries(routes).forEach(([key, value]) => {
-    routesList.push(...value);
+    routesList.push(...value.map(route => !isAdmin && !employeePaths.includes(route.path) ? { ...route, element: <Navigate to="/" replace /> } : route));
   });
 
   function getAppNameByPath(path) {

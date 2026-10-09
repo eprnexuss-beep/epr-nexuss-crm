@@ -30,6 +30,11 @@ const updateProfile = async (userModel, req, res) => {
         name: req.body.name,
         surname: req.body.surname,
       };
+  if (updates.email) {
+    updates.email = String(updates.email).trim().toLowerCase();
+    const duplicate = await User.exists({ email: updates.email, _id: { $ne: userProfile._id } });
+    if (duplicate) return res.status(409).json({ success: false, message: 'Email already belongs to another account' });
+  }
   // Find document by id and updates with the required fields
   const result = await User.findOneAndUpdate(
     { _id: userProfile._id, removed: false },
