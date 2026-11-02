@@ -6,5 +6,6 @@ export const SERVICE_TYPES = [
   'E-waste Recycling',
   'RVSF',
   'Digital Marketing',
+  'Licence',
   'Other',
 ];

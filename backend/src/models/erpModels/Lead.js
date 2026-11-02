@@ -6,7 +6,7 @@ const leadSchema = new mongoose.Schema({
   assignedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', index: true },
   serviceType: {
   type: String,
-  enum: ['Lithium Recycling', 'Tyre Recycling', 'Biogas', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Digital Marketing', 'Other'],
+  enum: ['Lithium Recycling', 'Tyre Recycling', 'Biogas', 'Plastic Recycling', 'E-waste Recycling', 'RVSF', 'Digital Marketing', 'Licence', 'Other'],
 },
 otherServiceType: String,
 

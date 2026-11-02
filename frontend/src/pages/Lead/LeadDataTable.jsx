@@ -91,6 +91,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails, notInterestedOnly = f
     { text: 'RVSF', value: 'RVSF' },
     { text: 'Biogas', value: 'Biogas' },
     { text: 'Digital Marketing', value: 'Digital Marketing' },
+    { text: 'Licence', value: 'Licence' },
     { text: 'Other', value: 'Other' },
   ];
 
