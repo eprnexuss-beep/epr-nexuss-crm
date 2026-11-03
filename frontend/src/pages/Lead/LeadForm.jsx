@@ -21,6 +21,8 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
   const [followUps, setFollowUps] = useState([{ date: null, message: '', status: 'pending' }]);
   const [updates, setUpdates] = useState([{ message: '' }]);
   const selectedServiceType = Form.useWatch('serviceType', form);
+  const selectedStatus = Form.useWatch('status', form);
+  const followUpRequired = !isEdit && selectedStatus !== 'not_interested';
 
   // Load initial data properly
   useEffect(() => {
@@ -73,6 +75,10 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
   };
 
   const onFinish = async (values) => {
+    if (!isEdit && values.status !== 'not_interested' && followUps.some(fu => !fu.date || !dayjs(fu.date).isValid() || !fu.message?.trim())) {
+      message.error('Please enter a follow-up date and time and a message for each follow-up.');
+      return;
+    }
     setLoading(true);
     try {
       const payload = {
@@ -177,7 +183,10 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
         {followUps.map((fu, index) => (
           <div key={index} style={{ marginBottom: 16, padding: 12, border: '1px solid #f0f0f0', borderRadius: 8 }}>
             <Space direction="vertical" style={{ width: '100%' }}>
+              {followUpRequired && <span><span style={{ color: '#ff4d4f' }}>* </span>Follow-up Date &amp; Time</span>}
               <DatePicker
+                aria-label="Follow-up Date and Time"
+                aria-required={followUpRequired}
                 showTime={{ format: 'hh:mm A' }}
                 format="DD/MM/YYYY hh:mm A"
                 style={{ width: '100%' }}
@@ -189,7 +198,10 @@ const LeadForm = ({ initialValues, onSuccess, isEdit = false }) => {
                   setFollowUps(newFollowUps);
                 }}
               />
+              {followUpRequired && <span><span style={{ color: '#ff4d4f' }}>* </span>Follow-up Message</span>}
               <Input.TextArea
+                aria-label="Follow-up Message"
+                aria-required={followUpRequired}
                 rows={2}
                 placeholder="Follow-up Message"
                 value={fu.message}

@@ -13,6 +13,9 @@ const assignFields = async (body) => {
 };
 const create = safe(async (req, res) => {
   const data = pickLeadFields(req.body);
+  if (data.status !== 'not_interested' && (!Array.isArray(data.followUps) || data.followUps.length === 0 || data.followUps.some(fu => !fu || !fu.date || !Number.isFinite(new Date(fu.date).getTime()) || typeof fu.message !== 'string' || !fu.message.trim()))) {
+    return res.status(400).json({ success: false, message: 'A follow-up date and time and message are required for each follow-up.' });
+  }
   Object.assign(data, isAdmin(req.admin) ? await assignFields(req.body) : { assignedUser: req.admin._id, assignedTo: [req.admin.name, req.admin.surname].filter(Boolean).join(' ') });
   const lead = await Lead.create({ ...data, createdBy: req.admin._id });
   res.status(201).json({ success: true, data: lead });

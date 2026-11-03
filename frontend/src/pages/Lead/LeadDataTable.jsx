@@ -22,6 +22,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails, notInterestedOnly = f
     finally { setAssigning(false); }
   };
   const [leads, setLeads] = useState([]);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
@@ -96,6 +97,7 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails, notInterestedOnly = f
   ];
 
   const columns = [
+    { title: 'S. No.', key: 'serial', render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1 },
     { title: 'Lead Name', dataIndex: 'leadName', key: 'leadName' },
     {
       title: 'Assigned To',
@@ -202,6 +204,8 @@ const LeadDataTable = forwardRef(({ onEdit, onViewDetails, notInterestedOnly = f
     <Table
       rowSelection={isAdmin ? { selectedRowKeys: selectedKeys, onChange: setSelectedKeys, selections: [Table.SELECTION_ALL, Table.SELECTION_NONE] } : undefined}
       columns={columns}
+      pagination={{ ...pagination, showSizeChanger: true }}
+      onChange={(nextPagination) => setPagination({ current: nextPagination.current, pageSize: nextPagination.pageSize })}
       dataSource={filteredLeads}
       loading={loading}
       rowKey="_id"
