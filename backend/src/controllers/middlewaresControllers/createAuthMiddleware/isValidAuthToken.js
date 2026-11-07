@@ -19,7 +19,7 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
         jwtExpired: true,
       });
 
-    const verified = jwt.verify(token, process.env[jwtSecret]);
+    const verified = jwt.verify(token, process.env[jwtSecret], { maxAge: '1h' });
 
     if (!verified)
       return res.status(401).json({
@@ -57,6 +57,9 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
       next();
     }
   } catch (error) {
+    if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError' || error.name === 'NotBeforeError') {
+      return res.status(401).json({ success: false, message: 'Session expired or invalid. Please log in again.', jwtExpired: true });
+    }
     return res.status(500).json({
       success: false,
       result: null,

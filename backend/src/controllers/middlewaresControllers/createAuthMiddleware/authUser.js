@@ -18,7 +18,7 @@ const authUser = async (req, res, { user, databasePassword, password, UserPasswo
         id: user._id,
       },
       process.env.JWT_SECRET,
-      { expiresIn: req.body.remember ? 365 * 24 + 'h' : '24h', jwtid: crypto.randomUUID() }
+      { expiresIn: '1h', jwtid: crypto.randomUUID() }
     );
 
     await UserPasswordModel.findOneAndUpdate(

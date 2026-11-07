@@ -16,6 +16,9 @@ const settingController = require('@/controllers/coreControllers/settingControll
 
 const { singleStorageUpload } = require('@/middlewares/uploadMiddleware');
 
+// This router is mounted behind authentication in app.js.
+router.get('/session/check', (req, res) => res.json({ success: true }));
+
 // //_______________________________ Admin management_______________________________
 
 router.route('/admin/read/:id').get(catchErrors(adminController.read));

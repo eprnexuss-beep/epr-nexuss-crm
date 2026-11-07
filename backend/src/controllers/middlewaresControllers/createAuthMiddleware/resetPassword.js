@@ -13,7 +13,7 @@ const resetPassword = async (req, res, { userModel }) => {
   const databasePassword = await UserPassword.findOne({ user: userId, removed: false });
   const user = await User.findOne({ _id: userId, removed: false }).exec();
 
-  if (!user.enabled)
+  if (user && !user.enabled)
     return res.status(409).json({
       success: false,
       result: null,
@@ -57,18 +57,10 @@ const resetPassword = async (req, res, { userModel }) => {
   const hashedPassword = bcrypt.hashSync(salt + password);
   const emailToken = shortid.generate();
 
-  const token = jwt.sign(
-    {
-      id: userId,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: '24h' }
-  );
-
   await UserPassword.findOneAndUpdate(
     { user: userId },
     {
-      $push: { loggedSessions: token },
+      loggedSessions: [],
       password: hashedPassword,
       salt: salt,
       emailToken: emailToken,
@@ -96,17 +88,8 @@ const resetPassword = async (req, res, { userModel }) => {
     //     })
     return res.status(200).json({
       success: true,
-      result: {
-        _id: user._id,
-        name: user.name,
-        surname: user.surname,
-        role: user.role,
-        email: user.email,
-        photo: user.photo,
-        token: token,
-        maxAge: req.body.remember ? 365 : null,
-      },
-      message: 'Successfully resetPassword user',
+      result: {},
+      message: 'Password reset successfully. Please log in.',
     });
 };
 

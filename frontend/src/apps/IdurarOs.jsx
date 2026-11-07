@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 import { selectAuth } from '@/redux/auth/selectors';
+import useSessionGuard from '@/hooks/useSessionGuard';
 import { AppContextProvider } from '@/context/appContext';
 import PageLoader from '@/components/PageLoader';
 import AuthRouter from '@/router/AuthRouter';
@@ -22,6 +23,7 @@ const DefaultApp = () => (
 
 export default function IdurarOs() {
   const { isLoggedIn } = useSelector(selectAuth);
+  useSessionGuard();
 
   console.log(
     '🚀 Welcome to EPR Nexuss CRM!'
